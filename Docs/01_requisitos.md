@@ -1,8 +1,8 @@
-# Documento de Requisitos — LavaRápido
+# LavaRápido
 
-## Contextualización del Problema
+## Problema
 
-En muchos barrios y conjuntos residenciales no existe un sistema organizado para el lavado de vehículos (carros, motos, bicicletas). Los propietarios deben buscar un lavadero disponible, esperar largas filas, no saben cuánto tiempo tomará el servicio y no pueden reservar un turno con anticipación. Por su parte, los lavaderos tienen dificultades para gestionar su capacidad, evitar tiempos muertos y organizar a sus empleados.
+En muchos barrios y conjuntos residenciales en las ciudades, no existe un sistema para el lavado de vehículos como carros, motos, bicicletas. Los propietarios deben buscar un lavadero disponible, esperar largas filas, no saben cuánto tiempo tomará el servicio y no pueden reservar un turno con anticipación. Por su parte, los lavaderos tienen dificultades para gestionar su capacidad, evitar tiempos muertos y organizar a sus empleados.
 
 **LavaRápido** es una plataforma web que permite a los propietarios de vehículos reservar turnos en lavaderos cercanos, y a los lavaderos gestionar su agenda, empleados y servicios de manera eficiente.
 
@@ -10,9 +10,12 @@ En muchos barrios y conjuntos residenciales no existe un sistema organizado para
 
 | Actor | Descripción |
 |---|---|
-| **Cliente** (Propietario del vehículo) | Usuario que busca, reserva y paga un turno de lavado para su vehículo. |
-| **Lavadero** (Administrador del establecimiento) | Gestiona los servicios, horarios, empleados y confirma las reservas. |
-| **Administrador de la plataforma** | Supervisa los lavaderos registrados, resuelve conflictos y gestiona el sistema general. |
+| **Cliente**  | Usuario que busca, reserva y paga un turno de lavado para su vehículo. |
+| **Lavadero** | Gestiona los servicios, horarios, empleados y confirma las reservas de su negocio. |
+| **Empleado del lavadero** | Personal operativo que ejecuta el lavado y marca el estado del turno (en proceso, finalizado) desde su cuenta. |
+| **Administrador de la plataforma** | Supervisa los lavaderos registrados, aprueba nuevos registros, resuelve conflictos y gestiona el sistema general. |
+| **Pasarela de Pagos** (Actor externo) | Sistema externo que procesa las transacciones de pago de las reservas de forma segura. |
+| **Soporte al Cliente** | Encargado de atender reclamos, disputas de calificaciones y solicitudes de reembolso o cancelación. |
 
 ## Mapeo de Requisitos
 
