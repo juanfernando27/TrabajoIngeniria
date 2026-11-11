@@ -100,3 +100,8 @@ La instalación se prepara con los hooks automáticos de Impeccable desactivados
 ## Contexto de diseño
 
 `PRODUCT.md` reúne el alcance y las reglas del producto. `DESIGN.md` documenta la identidad visual y el movimiento. `AGENTS.md` orienta el trabajo posterior de Codex. La tipografía Manrope se sirve localmente y su licencia se incluye en los recursos de la web.
+
+
+## Extensiones implementadas
+
+Esta versión agrega gestión de turnos, cancelaciones, asignación de empleados, estados, calificaciones, edición de precios y reclamos. Consulte [guía completa](../Docs/06_incremento_completo_50_SP.md). El alcance acumulado es 50 SP; las secciones originales del MVP documentan el corte anterior. npm.cmd test ejecuta 15 pruebas. Los avisos se actualizan con los botones del panel; los pagos y reembolsos son simulados.

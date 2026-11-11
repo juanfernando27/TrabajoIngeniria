@@ -3,7 +3,7 @@
 const MENU = {
   inicio: [['Cómo funciona', '#como-funciona'], ['Ingresar', '#ingreso']],
   cliente: [['Buscar', '#buscar'], ['Mis reservas', '#mis-turnos'], ['Correos simulados', '#avisos']],
-  lavadero: [['Turnos', '#turnos'], ['Disponibilidad', '#configuracion'], ['Registrar lavadero', '#registro'], ['Validar código', '#validacion']],
+  lavadero: [['Turnos', '#turnos'], ['Avisos', '#notificaciones'], ['Disponibilidad', '#configuracion'], ['Registrar lavadero', '#registro'], ['Validar código', '#validacion']],
   admin: [['Pendientes', '#por-revisar'], ['Supervisión', '#supervision']],
   empleado: [['Asignaciones', '#asignaciones']],
   soporte: [['Reclamos', '#reclamos']]
@@ -91,6 +91,7 @@ async function api(ruta, { metodo = 'GET', datos } = {}) {
   const headers = { 'X-Rol-Demo': pantalla };
   const perfil = sessionStorage.getItem(llaveSesion + '-perfil');
   if (perfil) headers['X-Cliente-Demo'] = perfil;
+  headers['X-Empleado-Demo'] = sessionStorage.getItem('empleado-demo') || '';
   if (datos !== undefined) headers['Content-Type'] = 'application/json';
   const respuesta = await fetch('/api' + ruta, { method: metodo, headers, body: JSON.stringify(datos) });
   const resultado = await respuesta.json();
@@ -267,6 +268,23 @@ async function iniciarCliente(metadatos) {
         nodo('p', 'Código ' + reserva.codigo, 'estado codigo-reserva'),
         nodo('p', 'Estado ' + reserva.estado + ' · Pago simulado ' + reserva.pago.estado)
       );
+      if (['RESERVADO', 'CONFIRMADO'].includes(reserva.estado)) {
+        const cancelar = nodo('form');
+        const boton = nodo('button', 'Cancelar mi reserva', 'riesgo');
+        boton.type = 'submit';
+        boton.disabled = !reserva.puedeCancelar;
+        const limite = nodo('p', 'Puedes cancelar hasta ' + fechaEnvio.format(new Date(reserva.limiteCancelacion)) + ' (Colombia).', 'nota');
+        limite.id = 'limite-' + reserva.id;
+        boton.setAttribute('aria-describedby', limite.id);
+        cancelar.append(limite, boton);
+        alEnviar(cancelar, async () => {
+          await api('/reservas/' + encodeURIComponent(reserva.id) + '/cancelar', { metodo: 'PATCH' });
+          mostrar('Reserva cancelada. Cupo liberado y aviso registrado para el lavadero.');
+          await mostrarHistorial();
+          if (elegido) await consultarHoras();
+        }, () => reserva.puedeCancelar);
+        tarjeta.append(cancelar);
+      }
       tarjeta.dataset.reserva = reserva.id;
       tarjeta.querySelector('.estado').dataset.estado = reserva.estado;
       return tarjeta;
@@ -415,6 +433,28 @@ async function iniciarCliente(metadatos) {
   catalogo = await api('/lavaderos');
   mostrarCatalogo();
   porId('busqueda').addEventListener('input', mostrarCatalogo);
+  let sincronizando = false;
+  setInterval(async () => {
+    if (document.hidden || enviando || sincronizando) return;
+    sincronizando = true;
+    try {
+      const nuevo = await api('/lavaderos?lat=' + catalogo.origen.lat + '&lon=' + catalogo.origen.lon);
+      catalogo = nuevo;
+      mostrarCatalogo();
+      if (elegido) {
+        const actualizado = nuevo.lavaderos.find(l => l.id === elegido.id);
+        if (actualizado) {
+          elegido = actualizado;
+          const seleccionado = servicio.value;
+          servicio.replaceChildren();
+          for (const s of elegido.servicios) opcion(servicio,s.id,s.nombre+' · $'+pesos.format(s.precio));
+          servicio.value = seleccionado;
+        }
+      }
+    } catch { /* Se conserva el catálogo visible; la reserva vuelve a validar en el servidor. */ }
+    finally { sincronizando = false; }
+  }, 3000);
+
   botonUbicacion.disabled = false;
   await mostrarHistorial();
 }
@@ -672,6 +712,7 @@ async function iniciar() {
     return;
   }
   cargarMenu();
+  if (['cliente','lavadero','empleado','soporte'].includes(pantalla)) await iniciarExtensiones();
   if (pantalla === 'admin') await iniciarAdmin();
   if (pantalla === 'inicio') {
     iniciarAnimacionPortada();
@@ -707,12 +748,22 @@ async function iniciarTurnos(hoy) {
   async function cargar() {
     const actual = ++solicitud;
     lista.replaceChildren();
+    porId('avisos-lavadero').replaceChildren();
     porId('resumen-turnos').textContent = 'Cargando agenda…';
     if (!selector.value) { porId('resumen-turnos').textContent = 'Selecciona un establecimiento.'; return; }
     const id = selector.value;
     const base = '/gestion/lavaderos/' + encodeURIComponent(id) + '/turnos';
-    const turnos = await api(base + '?fecha=' + encodeURIComponent(fecha.value));
+    const [turnos, avisos] = await Promise.all([
+      api(base + '?fecha=' + encodeURIComponent(fecha.value)),
+      api('/gestion/lavaderos/' + encodeURIComponent(id) + '/avisos')
+    ]);
     if (actual !== solicitud) return;
+    porId('avisos-lavadero').replaceChildren(...(avisos.length ? avisos.map((aviso) => {
+      const tarjeta = nodo('article', '', 'tarjeta');
+      tarjeta.append(nodo('h3', 'Cancelación del cliente'), nodo('p', aviso.mensaje),
+        nodo('p', fechaEnvio.format(new Date(aviso.creadoEn)), 'nota'));
+      return tarjeta;
+    }) : [nodo('p', 'No hay avisos para este establecimiento.')]));
     porId('resumen-turnos').textContent = turnos.length + ' turnos · ' + fecha.value;
     if (!turnos.length) lista.append(nodo('p', 'No hay reservas para esta fecha.'));
     for (const turno of turnos) {
@@ -741,5 +792,82 @@ async function iniciarTurnos(hoy) {
   }
   alEnviar(porId('consultar-turnos'), cargar);
   selector.addEventListener('change', () => cargar().catch((error) => mostrar(error.message, true)));
+  await cargar();
+}
+
+/**
+ * Renderiza las operaciones de extensión por rol con formularios nativos.
+ * @returns {Promise<void>} Panel disponible.
+ * @throws {Error} Si falla la consulta inicial.
+ */
+async function iniciarExtensiones() {
+  const raiz=porId('extension-contenido');
+  const actualizar=nodo('button','Actualizar panel'); actualizar.type='button';
+  const contenido=nodo('div'); raiz.append(actualizar,contenido);
+  /** @param {HTMLElement} destino - Contenedor. @param {string} titulo - Acción. @param {object[]} campos - Campos. @param {Function} accion - Guardado. @returns {void} Formulario creado. @throws {never} Errores manejados por alEnviar. */
+  function form(destino,titulo,campos,accion) {
+    const f=nodo('form'), valores={}; f.append(nodo('h3',titulo));
+    for(const c of campos) {
+      const label=nodo('label',c.label), input=nodo(c.opciones?'select':c.type==='textarea'?'textarea':'input');
+      if(c.opciones) for(const o of c.opciones) opcion(input,o.id,o.nombre);
+      else if(c.type!=='textarea') input.type=c.type||'text';
+      input.required=!c.opcional; input.id='ext-'+Math.random().toString(36).slice(2);
+      if(c.min!==undefined) input.min=c.min;
+      if(c.max!==undefined) input.max=c.max;
+      if(c.value!==undefined) input.value=c.value;
+      if(c.type==='number') input.step='1';
+      input.maxLength=c.maxLength||1000;
+      label.htmlFor=input.id; f.append(label,input); valores[c.key]=input;
+    }
+    const boton=nodo('button',titulo);boton.type='submit'; f.append(boton);destino.append(f);
+    alEnviar(f,async()=>{await accion(Object.fromEntries(Object.entries(valores).map(([k,v])=>[k,v.type==='number'?v.valueAsNumber:v.value])));mostrar('Operación guardada correctamente.');await cargar();});
+  }
+  /** @returns {Promise<void>} Panel actualizado. @throws {Error} Error de API. */
+  async function cargar() {
+    contenido.replaceChildren();
+    if(pantalla==='empleado') {
+      const empleados=await api('/empleados');
+      const selector=nodo('select'),label=nodo('label','Perfil de empleado (simulado)');selector.id='perfil-empleado';label.htmlFor=selector.id;
+      opcion(selector,'','Selecciona tu perfil'); for(const e of empleados) opcion(selector,e.id,e.nombre);
+      selector.value=sessionStorage.getItem('empleado-demo')||'';contenido.append(label,selector);
+      selector.addEventListener('change',()=>{sessionStorage.setItem('empleado-demo',selector.value);cargar().catch(e=>mostrar(e.message,true));});
+      if(!selector.value)return;
+      const turnos=await api('/empleado/turnos');if(!turnos.length)contenido.append(nodo('p','No tienes turnos asignados.'));
+      for(const r of turnos){const card=nodo('article','','tarjeta');card.append(nodo('h3',r.fecha+' '+r.hora),nodo('p',r.codigo+' · '+r.estado));contenido.append(card);
+        const siguiente=['RESERVADO','CONFIRMADO'].includes(r.estado)?'EN_PROCESO':r.estado==='EN_PROCESO'?'FINALIZADO':null;
+        if(siguiente)form(card,'Marcar '+siguiente,[],()=>api('/empleado/turnos/'+r.id,{metodo:'PATCH',datos:{estado:siguiente}}));
+      }
+    }
+    if(pantalla==='lavadero') {
+      const lavaderos=await api('/gestion/lavaderos');
+      for(const l of lavaderos){const card=nodo('article','','tarjeta');card.append(nodo('h3',l.nombre));contenido.append(card);
+        for(const s of l.servicios) form(card,'Actualizar precio · '+s.nombre,[{key:'precio',label:'Precio COP',type:'number',min:1,max:1000000,value:s.precio}],d=>api('/gestion/lavaderos/'+l.id+'/servicios/'+s.id,{metodo:'PUT',datos:d}));
+        const dia=nodo('input');dia.type='date';dia.value=(await api('/opciones')).hoy;dia.id='asignar-fecha-'+l.id;const label=nodo('label','Fecha para asignar empleados');label.htmlFor=dia.id;card.append(label,dia);
+        const consultar=nodo('button','Consultar asignaciones');consultar.type='button';card.append(consultar);const lista=nodo('div');card.append(lista);
+        consultar.addEventListener('click',async()=>{try{lista.replaceChildren();const turnos=await api('/gestion/lavaderos/'+l.id+'/turnos?fecha='+dia.value);const empleados=await api('/empleados?lavaderoId='+l.id);for(const r of turnos.filter(r=>['RESERVADO','CONFIRMADO'].includes(r.estado)))form(lista,'Asignar · '+r.hora+' · '+r.codigo,[{key:'empleadoId',label:'Empleado',opciones:empleados}],d=>api('/gestion/lavaderos/'+l.id+'/turnos/'+r.id+'/empleado',{metodo:'PUT',datos:d}));if(!lista.children.length)lista.append(nodo('p','No hay turnos pendientes de lavado.'));}catch(e){mostrar(e.message,true);}});
+      }
+    }
+    if(pantalla==='cliente') {
+      const h=await api('/mis-reservas');
+      contenido.append(nodo('h3','Avisos del servicio'));
+      for(const e of h.eventos)contenido.append(nodo('p',e.mensaje));
+      for(const r of h.reservas){const card=nodo('article','','tarjeta');card.append(nodo('h3',r.lavaderoNombre+' · '+r.codigo),nodo('p',r.estado));contenido.append(card);
+        if(r.estado==='FINALIZADO'&&!h.calificaciones.some(c=>c.id===r.id))form(card,'Calificar servicio',[{key:'estrellas',label:'Estrellas (1 a 5)',type:'number',min:1,max:5},{key:'comentario',label:'Comentario opcional',type:'textarea',maxLength:500,opcional:true}],d=>api('/reservas/'+r.id+'/calificacion',{metodo:'POST',datos:d}));
+        form(card,'Presentar reclamo',[{key:'motivo',label:'Motivo del reclamo',type:'textarea'}],d=>api('/reservas/'+r.id+'/reclamos',{metodo:'POST',datos:d}));
+      }
+      for(const c of h.reclamos)contenido.append(nodo('p','Reclamo: '+c.motivo+' · '+c.estado+(c.tipo?' · '+c.tipo+' · $'+pesos.format(c.monto)+' · '+c.motivoResolucion:'')));
+      const catalogo=await api('/lavaderos');
+      for(const l of catalogo.lavaderos){const perfil=await api('/lavaderos/'+l.id+'/perfil');const card=nodo('article','','tarjeta');card.append(nodo('h3',l.nombre),nodo('p',perfil.total?'★ '+perfil.promedio.toFixed(1)+' / 5 · '+perfil.total+' opiniones':'Sin calificaciones'));for(const c of perfil.opiniones)card.append(nodo('p','★ '+c.estrellas+' · '+c.comentario));contenido.append(card);}
+    }
+    if(pantalla==='soporte') {
+      const reclamos=await api('/soporte/reclamos');if(!reclamos.length)contenido.append(nodo('p','No hay reclamos.'));
+      for(const c of reclamos){const card=nodo('article','','tarjeta');card.append(nodo('h3',c.creadoEn+' · '+c.estado),nodo('p',c.motivo),nodo('p',c.reserva.codigo+' · '+c.reserva.estado+' · '+c.reserva.fecha+' '+c.reserva.hora+' · Pago '+c.reserva.pago.referencia+' · $'+pesos.format(c.reserva.servicio.precio)));
+        for(const e of c.historial)card.append(nodo('p',e.creadoEn+' · '+e.mensaje));contenido.append(card);
+        if(c.estado==='ABIERTO')form(card,'Resolver reclamo',[{key:'tipo',label:'Resolución',opciones:['REEMBOLSO','AJUSTE','RECHAZO'].map(id=>({id,nombre:id}))},{key:'monto',label:'Monto COP (0 para rechazo)',type:'number',min:0,max:c.reserva.servicio.precio,value:0},{key:'motivo',label:'Explicación obligatoria',type:'textarea'}],d=>api('/soporte/reclamos/'+c.id,{metodo:'PATCH',datos:d}));
+        else card.append(nodo('p',c.tipo+' · $'+pesos.format(c.monto)+' · '+c.motivoResolucion+' · '+(c.referencia||'Sin movimiento de dinero')));
+      }
+    }
+  }
+  actualizar.addEventListener('click',()=>cargar().catch(e=>mostrar(e.message,true)));
   await cargar();
 }

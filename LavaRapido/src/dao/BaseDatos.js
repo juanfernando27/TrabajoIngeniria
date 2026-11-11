@@ -14,7 +14,7 @@ class BaseDatos {
     this.conexion = new DatabaseSync(archivo);
     this.conexion.exec('PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL;');
     const version = this.conexion.prepare('PRAGMA user_version').get().user_version;
-    if (version > 1) {
+    if (version > 3) {
       this.conexion.close();
       throw new Error('Esta base de datos pertenece a una versión más reciente de LavaRápido.');
     }
@@ -50,6 +50,23 @@ class BaseDatos {
         mensaje TEXT NOT NULL, estado TEXT NOT NULL
       );
       PRAGMA user_version = 1;
+    `));
+    if (version < 2) this.transaccion(() => this.conexion.exec(`
+      CREATE TABLE IF NOT EXISTS notificaciones (
+        id TEXT PRIMARY KEY,
+        reserva_id TEXT NOT NULL REFERENCES reservas(id),
+        lavadero_id TEXT NOT NULL REFERENCES lavaderos(id),
+        creado_en TEXT NOT NULL, tipo TEXT NOT NULL, mensaje TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS notificaciones_lavadero ON notificaciones(lavadero_id, creado_en);
+      PRAGMA user_version = 2;
+    `));
+    if (version < 3) this.transaccion(() => this.conexion.exec(`
+      CREATE TABLE IF NOT EXISTS extension_registros (
+        tipo TEXT NOT NULL, id TEXT NOT NULL, datos TEXT NOT NULL,
+        PRIMARY KEY(tipo,id)
+      );
+      PRAGMA user_version=3;
     `));
   }
 
