@@ -35,6 +35,17 @@ function crearApp({ ahora, archivoDatos } = {}) {
     };
   }
 
+  app.get('/api/lavaderos/:id/perfil', servir(null, r => fachada.perfilLavadero(r.params.id)));
+  app.get('/api/empleados', servir(null, r => fachada.empleados(r.query.lavaderoId)));
+  app.get('/api/empleado/turnos', servir('empleado', r => fachada.turnosEmpleado(r.get('X-Empleado-Demo'))));
+  app.patch('/api/empleado/turnos/:id', servir('empleado', r => fachada.estadoLavado(r.get('X-Empleado-Demo'), r.params.id, r.body?.estado)));
+  app.put('/api/gestion/lavaderos/:id/turnos/:reservaId/empleado', servir('lavadero', r => fachada.asignarEmpleado(r.params.id, r.params.reservaId, r.body?.empleadoId)));
+  app.put('/api/gestion/lavaderos/:id/servicios/:servicioId', servir('lavadero', r => fachada.precioServicio(r.params.id, r.params.servicioId, r.body?.precio)));
+  app.post('/api/reservas/:id/calificacion', servir('cliente', r => fachada.calificar(r.get('X-Cliente-Demo'), r.params.id, r.body), 201));
+  app.post('/api/reservas/:id/reclamos', servir('cliente', r => fachada.crearReclamo(r.get('X-Cliente-Demo'), r.params.id, r.body?.motivo), 201));
+  app.get('/api/soporte/reclamos', servir('soporte', () => fachada.listarReclamos()));
+  app.patch('/api/soporte/reclamos/:id', servir('soporte', r => fachada.resolverReclamo(r.params.id,r.body)));
+
   app.get('/api/opciones', servir(null, () => fachada.opciones()));
   app.get('/api/lavaderos', servir(null, (req) => fachada.listarCercanos(req.query.lat, req.query.lon)));
   app.get('/api/lavaderos/:id/disponibilidad',
@@ -43,6 +54,11 @@ function crearApp({ ahora, archivoDatos } = {}) {
     servir('cliente', (req) => fachada.historial(req.get('X-Cliente-Demo'))));
   app.post('/api/reservas',
     servir('cliente', (req) => fachada.reservar(req.get('X-Cliente-Demo'), req.body), 201));
+
+  app.patch('/api/reservas/:id/cancelar',
+    servir('cliente', (req) => fachada.cancelarReserva(req.get('X-Cliente-Demo'), req.params.id)));
+  app.get('/api/gestion/lavaderos/:id/avisos',
+    servir('lavadero', (req) => fachada.listarAvisosLavadero(req.params.id)));
 
   app.get('/api/gestion/lavaderos', servir('lavadero', () => fachada.listarTodos()));
   app.post('/api/gestion/lavaderos', servir('lavadero', (req) => fachada.registrar(req.body), 201));

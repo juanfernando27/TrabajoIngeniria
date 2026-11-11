@@ -27,7 +27,9 @@
       <form id="consultar-turnos"><label for="fecha-turnos">Fecha de atención</label><input id="fecha-turnos" type="date" required><button type="submit">Actualizar turnos</button></form>
       <p id="resumen-turnos" role="status"></p><div id="lista-turnos" class="tarjetas"></div>
     </section>
+    <section id="notificaciones" class="panel"><h2>Avisos del lavadero</h2><p>Notificaciones simuladas persistentes. Se consultan al cambiar de establecimiento o pulsar Actualizar turnos.</p><div id="avisos-lavadero" class="tarjetas" aria-live="polite"></div></section>
     <section id="registro" class="panel"><h2>Registra un nuevo lavadero</h2><p>La administración revisará tus datos antes de publicar el establecimiento.</p><form id="registrar"><div class="campos"><div><label for="nombre">Nombre comercial</label><input id="nombre" required maxlength="100" autocomplete="organization"></div><div><label for="direccion">Dirección</label><input id="direccion" required maxlength="160" autocomplete="street-address"></div><div><label for="telefono">Teléfono</label><input id="telefono" type="tel" required maxlength="25" autocomplete="tel"></div><div><label for="sector">Sector de Pasto</label><select id="sector" required></select></div></div><fieldset><legend>Servicios y precios iniciales</legend><div id="servicios" class="servicios"></div></fieldset><fieldset><legend>Agenda inicial</legend><div id="agenda-inicial"></div></fieldset><button type="submit" disabled>Enviar a revisión</button></form></section>
+    <section id="extension" class="panel"><h2>Gestión de servicios</h2><div id="extension-contenido"></div></section>
   </main>
   <footer class="envoltura pie"><span>LavaRápido · Universidad Mariana</span><span>Prototipo académico · Pasto, Colombia</span></footer>
 </body>

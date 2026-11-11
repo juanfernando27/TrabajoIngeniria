@@ -17,3 +17,7 @@ Cada turno ocupa una hora en horario de Colombia. La capacidad se comparte entre
 ## Escena de uso
 
 El cliente consulta principalmente desde un teléfono antes de salir de casa. Los administradores trabajan con formularios y listas en escritorio o móvil. Los precios se presentan en COP y los textos en español de Colombia. Los datos iniciales de establecimientos, direcciones y perfiles son ficticios. Las ubicaciones del mapa son aproximaciones por sector.
+
+## Incremento de extensión
+
+HU05, HU06, HU07, HU09, HU10 y HU11 implementadas en el incremento actual. El alcance acumulado es 50 SP. Consultar Docs/06_incremento_completo_50_SP.md para criterios, decisiones y límites del prototipo.
