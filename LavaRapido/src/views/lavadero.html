@@ -21,6 +21,12 @@
       <section id="configuracion" class="panel"><h2>Disponibilidad del lavadero</h2><label for="lavadero">Establecimiento</label><select id="lavadero"></select><p id="estado-lavadero" role="status"></p><form id="configurar"><fieldset><legend>Capacidad y horarios semanales</legend><div id="agenda"></div></fieldset><button type="submit" disabled>Guardar disponibilidad</button></form></section>
       <section id="validacion" class="panel validacion-panel"><svg class="icono-grande" aria-hidden="true"><use href="/assets/iconos.svg#turno"/></svg><h2>Recibe a tu cliente</h2><p>Valida el código para el establecimiento elegido y la hora actual de Colombia.</p><form id="validar"><label for="codigo">Código de reserva</label><input id="codigo" required maxlength="12" placeholder="LRXXXXXXXXXX" autocapitalize="characters" spellcheck="false"><button type="submit" disabled>Validar código</button><p id="resultado-codigo" role="status"></p></form></section>
     </div>
+    <section id="turnos" class="panel">
+      <h2>Turnos del establecimiento</h2>
+      <p>Consulta la agenda del lavadero seleccionado arriba. La fecha inicial es hoy en Colombia.</p>
+      <form id="consultar-turnos"><label for="fecha-turnos">Fecha de atención</label><input id="fecha-turnos" type="date" required><button type="submit">Actualizar turnos</button></form>
+      <p id="resumen-turnos" role="status"></p><div id="lista-turnos" class="tarjetas"></div>
+    </section>
     <section id="registro" class="panel"><h2>Registra un nuevo lavadero</h2><p>La administración revisará tus datos antes de publicar el establecimiento.</p><form id="registrar"><div class="campos"><div><label for="nombre">Nombre comercial</label><input id="nombre" required maxlength="100" autocomplete="organization"></div><div><label for="direccion">Dirección</label><input id="direccion" required maxlength="160" autocomplete="street-address"></div><div><label for="telefono">Teléfono</label><input id="telefono" type="tel" required maxlength="25" autocomplete="tel"></div><div><label for="sector">Sector de Pasto</label><select id="sector" required></select></div></div><fieldset><legend>Servicios y precios iniciales</legend><div id="servicios" class="servicios"></div></fieldset><fieldset><legend>Agenda inicial</legend><div id="agenda-inicial"></div></fieldset><button type="submit" disabled>Enviar a revisión</button></form></section>
   </main>
   <footer class="envoltura pie"><span>LavaRápido · Universidad Mariana</span><span>Prototipo académico · Pasto, Colombia</span></footer>
