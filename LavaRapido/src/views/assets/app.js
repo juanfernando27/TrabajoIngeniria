@@ -3,7 +3,7 @@
 const MENU = {
   inicio: [['Cómo funciona', '#como-funciona'], ['Ingresar', '#ingreso']],
   cliente: [['Buscar', '#buscar'], ['Mis reservas', '#mis-turnos'], ['Correos simulados', '#avisos']],
-  lavadero: [['Disponibilidad', '#configuracion'], ['Registrar lavadero', '#registro'], ['Validar código', '#validacion']],
+  lavadero: [['Turnos', '#turnos'], ['Disponibilidad', '#configuracion'], ['Registrar lavadero', '#registro'], ['Validar código', '#validacion']],
   admin: [['Pendientes', '#por-revisar'], ['Supervisión', '#supervision']],
   empleado: [['Asignaciones', '#asignaciones']],
   soporte: [['Reclamos', '#reclamos']]
@@ -678,7 +678,68 @@ async function iniciar() {
     iniciarSesion(await api('/opciones'));
   }
   if (pantalla === 'cliente') await iniciarCliente(await api('/opciones'));
-  if (pantalla === 'lavadero') await iniciarLavadero(await api('/opciones'));
+  if (pantalla === 'lavadero') {
+    const opciones = await api('/opciones');
+    await iniciarLavadero(opciones);
+    await iniciarTurnos(opciones.hoy);
+  }
 }
 
 iniciar().catch((error) => mostrar(error.message, true));
+
+/**
+ * Conecta la agenda operativa con el establecimiento elegido.
+ * @param {string} hoy - Fecha del servidor en Colombia.
+ * @returns {Promise<void>} Agenda inicial cargada.
+ * @throws {Error} Si falla la consulta inicial.
+ */
+async function iniciarTurnos(hoy) {
+  const fecha = porId('fecha-turnos');
+  const selector = porId('lavadero');
+  const lista = porId('lista-turnos');
+  fecha.value = hoy;
+  let solicitud = 0;
+  /**
+   * Consulta y dibuja la lista sin conservar respuestas de una selección anterior.
+   * @returns {Promise<void>} Vista actualizada.
+   * @throws {Error} Si falla la API.
+   */
+  async function cargar() {
+    const actual = ++solicitud;
+    lista.replaceChildren();
+    porId('resumen-turnos').textContent = 'Cargando agenda…';
+    if (!selector.value) { porId('resumen-turnos').textContent = 'Selecciona un establecimiento.'; return; }
+    const id = selector.value;
+    const base = '/gestion/lavaderos/' + encodeURIComponent(id) + '/turnos';
+    const turnos = await api(base + '?fecha=' + encodeURIComponent(fecha.value));
+    if (actual !== solicitud) return;
+    porId('resumen-turnos').textContent = turnos.length + ' turnos · ' + fecha.value;
+    if (!turnos.length) lista.append(nodo('p', 'No hay reservas para esta fecha.'));
+    for (const turno of turnos) {
+      const tarjeta = nodo('article', '', 'tarjeta');
+      tarjeta.append(nodo('h3', turno.hora + ' · ' + turno.servicio.nombre),
+        nodo('p', 'Cliente: ' + turno.clienteId + ' · ' + turno.vehiculo),
+        nodo('p', turno.codigo), nodo('p', turno.estado, 'estado'),
+        nodo('p', '$' + pesos.format(turno.servicio.precio)));
+      const estados = turno.estado === 'RESERVADO' ? ['CONFIRMADO', 'CANCELADO']
+        : turno.estado === 'CONFIRMADO' ? ['CANCELADO'] : [];
+      for (const estado of estados) {
+        const formulario = nodo('form');
+        const boton = nodo('button', estado === 'CONFIRMADO' ? 'Confirmar turno' : 'Cancelar turno');
+        boton.type = 'submit';
+        if (estado === 'CANCELADO') boton.className = 'riesgo';
+        formulario.append(boton);
+        alEnviar(formulario, async () => {
+          await api(base + '/' + encodeURIComponent(turno.id), { metodo: 'PATCH', datos: { estado } });
+          mostrar(estado === 'CONFIRMADO' ? 'Turno confirmado.' : 'Turno cancelado. El cupo quedó disponible.');
+          await cargar();
+        });
+        tarjeta.append(formulario);
+      }
+      lista.append(tarjeta);
+    }
+  }
+  alEnviar(porId('consultar-turnos'), cargar);
+  selector.addEventListener('change', () => cargar().catch((error) => mostrar(error.message, true)));
+  await cargar();
+}

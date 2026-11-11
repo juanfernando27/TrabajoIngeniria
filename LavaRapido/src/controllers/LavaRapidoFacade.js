@@ -9,6 +9,7 @@ const LavaderoController = require('./LavaderoController');
 const AgendaController = require('./AgendaController');
 const ReservaController = require('./ReservaController');
 const PagoSimulado = require('./PagoSimulado');
+const TurnoController = require('./TurnoController');
 const { ErrorApp, DIAS, fechaColombia } = require('./reglas');
 
 /**
@@ -49,7 +50,19 @@ function crearFachada(ahora = () => new Date(), archivoDatos = process.env.LAVAR
     pasarela: new PagoSimulado(), ahora
   });
 
+  const turnos = new TurnoController(lavaderos, reservaDAO, ahora);
   return {
+    listarTurnos: turnos.listar.bind(turnos),
+    /**
+     * Cambia el estado del turno de forma transaccional.
+     * @param {string} lavaderoId - Establecimiento.
+     * @param {string} id - Reserva.
+     * @param {string} estado - Estado solicitado.
+     * @returns {object} Turno actualizado.
+     * @throws {ErrorApp} Si una regla impide la transición.
+     * @throws {Error} Si SQLite no confirma la escritura.
+     */
+    cambiarEstadoTurno: (...args) => baseDatos.transaccion(() => turnos.cambiarEstado(...args)),
     autorizar,
     cerrar: baseDatos.cerrar.bind(baseDatos),
     /**

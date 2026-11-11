@@ -51,6 +51,11 @@ function crearApp({ ahora, archivoDatos } = {}) {
   app.get('/api/gestion/lavaderos/:id/codigos/:codigo',
     servir('lavadero', (req) => fachada.validarCodigo(req.params.id, req.params.codigo)));
 
+  app.get('/api/gestion/lavaderos/:id/turnos',
+    servir('lavadero', (req) => fachada.listarTurnos(req.params.id, req.query.fecha)));
+  app.patch('/api/gestion/lavaderos/:id/turnos/:turnoId',
+    servir('lavadero', (req) => fachada.cambiarEstadoTurno(req.params.id, req.params.turnoId, req.body?.estado)));
+
   app.get('/api/admin/lavaderos', servir('admin', () => fachada.listarTodos()));
   app.get('/api/admin/lavaderos/pendientes', servir('admin', () => fachada.listarPendientes()));
   app.patch('/api/admin/lavaderos/:id/aprobar',

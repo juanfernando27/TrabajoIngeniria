@@ -29,6 +29,17 @@ class ReservaDAO {
   }
 
   /**
+   * Actualiza el estado de una reserva existente.
+   * @param {string} id - Identificador.
+   * @param {string} estado - Estado validado por el controlador.
+   * @returns {void} Escritura completada.
+   * @throws {Error} Si falla SQLite.
+   */
+  actualizarEstado(id, estado) {
+    this.db.prepare('UPDATE reservas SET estado=? WHERE id=?').run(estado, id);
+  }
+
+  /**
    * Inserta una reserva nueva.
    * @param {Reserva} reserva - Reserva validada por el controlador.
    * @returns {Reserva} Reserva guardada.
