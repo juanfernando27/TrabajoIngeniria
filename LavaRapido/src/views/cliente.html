@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#075580">
+  <meta name="description" content="Reserva turnos de lavado para carros, motos y bicicletas en Pasto.">
+  <title>Cliente | LavaRápido</title>
+  <link rel="icon" href="/assets/marca.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/estilos.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body data-pantalla="cliente">
+  <a class="saltar" href="#contenido">Ir al contenido</a>
+  <header class="cabecera"><div class="envoltura barra"><a class="marca" href="/" aria-label="LavaRápido, inicio"><img src="/assets/marca.svg" width="36" height="36" alt="">LavaRápido</a><p class="marca-contexto">Tu turno para un mejor lavado</p><nav id="menu" aria-label="Menú del rol"></nav><p class="marca-pie">Universidad Mariana<br>Ingeniería de Software I</p></div></header>
+  <main id="contenido" class="envoltura" tabindex="-1">
+    <div class="avisos" aria-label="Mensajes de la aplicación"><p id="aviso" role="status"></p><p id="error" role="alert"></p></div>
+    <section class="hero">
+      <div><h1>Tu próximo lavado<br><span>empieza aquí.</span></h1><p id="saludo"></p></div>
+      <div class="hero-detalle"><svg aria-hidden="true"><use href="/assets/iconos.svg#calendario"/></svg><p>Elige una hora.<br>Organiza tu día.</p><span>Hora de Colombia</span></div>
+    </section>
+    <div class="reserva-grid">
+      <section id="buscar" class="panel catalogo-panel">
+        <div class="titulo-seccion"><h2>Encuentra tu lavadero</h2><span class="estado" id="total-lavaderos">Consultando</span></div>
+        <div class="barra busqueda-barra">
+          <div><label for="busqueda">Nombre o dirección</label><input id="busqueda" type="search" placeholder="Busca por nombre o sector" enterkeyhint="search"></div>
+          <button id="ubicacion" type="button" class="secundario"><svg aria-hidden="true"><use href="/assets/iconos.svg#ubicacion"/></svg>Usar mi ubicación</button>
+        </div>
+        <p class="nota" id="referencia"></p>
+        <details class="mapa"><summary>Ver mapa esquemático</summary><p class="nota">O marca el origen. Los números corresponden a las tarjetas de la lista.</p><div id="mapa" class="plano" role="img" aria-label="Ubicaciones aproximadas de los lavaderos"></div></details>
+        <div id="catalogo" class="tarjetas lavaderos-grid" aria-live="polite"></div>
+      </section>
+      <section id="reserva" class="panel reserva-panel">
+        <div class="titulo-seccion"><h2 id="nombre-lavadero">Tu reserva</h2><svg aria-hidden="true"><use href="/assets/iconos.svg#turno"/></svg></div>
+        <div id="reserva-vacia" class="vacio-reserva"><svg aria-hidden="true"><use href="/assets/iconos.svg#calendario"/></svg><h3>Elige dónde empezar</h3><p>Abre los horarios de un lavadero para preparar tu reserva.</p></div>
+        <div id="reserva-contenido" hidden>
+          <p class="nota">Horarios en hora de Colombia. Cada turno ocupa una hora.</p>
+          <form id="reservar">
+            <div class="campos"><div><label for="servicio">Servicio</label><select id="servicio" required></select></div><div><label for="vehiculo">Tipo de vehículo</label><select id="vehiculo" required></select></div><div><label for="fecha">Fecha del turno</label><input type="date" id="fecha" required></div></div>
+            <fieldset><legend>Elige tu hora</legend><p id="estado-calendario" role="status"></p><div id="horas" class="horas"></div></fieldset>
+            <button type="submit" disabled>Confirmar y simular pago</button>
+            <p class="nota">El cupo se comprueba otra vez al confirmar.</p>
+          </form>
+        </div>
+      </section>
+    </div>
+    <section id="mis-turnos" class="panel"><div class="titulo-seccion"><h2>Mis reservas</h2><span class="nota">Los detalles de tu próxima visita</span></div><div id="reservas" class="tarjetas"></div></section>
+    <section id="avisos" class="panel"><h2>Correos simulados</h2><p>El historial de confirmaciones de tu perfil.</p><div id="correos" class="tarjetas"></div></section>
+  </main>
+  <footer class="envoltura pie"><span>LavaRápido · Universidad Mariana</span><span>Prototipo académico · Pasto, Colombia</span></footer>
+</body>
+</html>
