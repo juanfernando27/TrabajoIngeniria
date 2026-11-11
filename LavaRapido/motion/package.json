@@ -1,0 +1,18 @@
+{
+  "name": "lavarapido-motion",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "remotion studio src/index.jsx --port=3002",
+    "render": "remotion render src/index.jsx LavaRapidoPromo ../src/views/assets/lavarapido-promo.mp4 --codec=h264",
+    "poster": "remotion still src/index.jsx LavaRapidoPromo ../src/views/assets/promo-poster.png --frame=100"
+  },
+  "engines": { "node": ">=24.0.0" },
+  "dependencies": {
+    "@remotion/cli": "4.0.542",
+    "remotion": "4.0.542",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  }
+}

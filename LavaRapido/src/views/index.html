@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#075580">
+  <meta name="description" content="Reserva turnos de lavado para carros, motos y bicicletas en Pasto.">
+  <title>Inicio | LavaRápido</title>
+  <link rel="icon" href="/assets/marca.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/estilos.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body data-pantalla="inicio">
+  <a class="saltar" href="#contenido">Ir al contenido</a>
+  <header class="cabecera"><div class="envoltura barra"><a class="marca" href="/" aria-label="LavaRápido, inicio"><img src="/assets/marca.svg" width="36" height="36" alt="">LavaRápido</a><p class="marca-contexto">Tu turno para un mejor lavado</p><nav id="menu" aria-label="Menú del rol"></nav><p class="marca-pie">Universidad Mariana<br>Ingeniería de Software I</p></div></header>
+  <main id="contenido" class="envoltura" tabindex="-1">
+    <div class="avisos" aria-label="Mensajes de la aplicación"><p id="aviso" role="status"></p><p id="error" role="alert"></p></div>
+    <div class="inicio-grid">
+      <section class="bienvenida">
+        <h1>Un buen lavado.<br><span>Un turno para ti.</span></h1>
+        <p>Encuentra un lavadero en Pasto, compara sus servicios y reserva una hora antes de salir de casa.</p>
+        <a class="boton" href="#ingreso">Elegir mi perfil <svg aria-hidden="true"><use href="/assets/iconos.svg#flecha"/></svg></a>
+        <div class="beneficios">
+          <p><svg aria-hidden="true"><use href="/assets/iconos.svg#calendario"/></svg>Horarios con cupo visible</p>
+          <p><svg aria-hidden="true"><use href="/assets/iconos.svg#vehiculo"/></svg>Carros, motos y bicicletas</p>
+        </div>
+      </section>
+      <section class="video-portada" aria-label="Presentación de LavaRápido">
+        <video autoplay muted loop playsinline disablepictureinpicture disableremoteplayback preload="auto" poster="/assets/promo-poster.png" width="1280" height="720">
+          <source src="/assets/lavarapido-promo.mp4" type="video/mp4">
+          <track kind="captions" src="/assets/promo.vtt" srclang="es" label="Español">
+          Tu navegador puede descargar <a href="/assets/lavarapido-promo.mp4">la presentación de LavaRápido</a>.
+        </video>
+        <button id="pausar-portada" class="pausa-animacion" type="button" aria-label="Pausar movimiento de la portada">Pausar movimiento</button>
+      </section>
+    </div>
+    <section class="acceso-grid" id="ingreso">
+      <div class="como-funciona" id="como-funciona">
+        <h2>Menos filas.<br>Más tiempo para ti.</h2>
+        <ol class="pasos">
+          <li><div><h3>Encuentra tu lavadero</h3><p>Consulta la dirección, la distancia aproximada y los servicios.</p></div></li>
+          <li><div><h3>Elige cuándo ir</h3><p>Selecciona un vehículo, una fecha y una hora con cupo.</p></div></li>
+          <li><div><h3>Lleva tu código</h3><p>Tu reserva reúne los detalles del turno y su código único.</p></div></li>
+        </ol>
+      </div>
+      <div class="panel acceso-panel">
+        <h2>Bienvenido a LavaRápido</h2>
+        <p>Elige un perfil para explorar la plataforma.</p>
+        <form id="ingresar">
+          <label for="rol">Tu rol</label>
+          <select id="rol" required>
+            <option value="cliente">Cliente</option><option value="lavadero">Lavadero</option>
+            <option value="empleado">Empleado del lavadero</option>
+            <option value="admin">Administrador de la plataforma</option>
+            <option value="soporte">Soporte al Cliente</option>
+          </select>
+          <p id="rol-descripcion" class="nota"></p>
+          <div id="perfiles"><label for="perfil">Perfil de cliente</label><select id="perfil" required></select></div>
+          <button type="submit" disabled>Ingresar</button>
+        </form>
+        <p class="nota acceso-nota">Demostración académica. La reserva incluye un pago simulado.</p>
+      </div>
+    </section>
+  </main>
+  <footer class="envoltura pie"><span>LavaRápido · Universidad Mariana</span><span>Prototipo académico · Pasto, Colombia</span></footer>
+</body>
+</html>

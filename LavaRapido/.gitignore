@@ -1,0 +1,5 @@
+node_modules/
+npm-debug.log*
+data/*.sqlite*
+motion/node_modules/
+motion/.remotion/

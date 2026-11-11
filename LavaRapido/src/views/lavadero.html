@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#075580">
+  <meta name="description" content="Reserva turnos de lavado para carros, motos y bicicletas en Pasto.">
+  <title>Lavadero | LavaRápido</title>
+  <link rel="icon" href="/assets/marca.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/estilos.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body data-pantalla="lavadero">
+  <a class="saltar" href="#contenido">Ir al contenido</a>
+  <header class="cabecera"><div class="envoltura barra"><a class="marca" href="/" aria-label="LavaRápido, inicio"><img src="/assets/marca.svg" width="36" height="36" alt="">LavaRápido</a><p class="marca-contexto">Tu turno para un mejor lavado</p><nav id="menu" aria-label="Menú del rol"></nav><p class="marca-pie">Universidad Mariana<br>Ingeniería de Software I</p></div></header>
+  <main id="contenido" class="envoltura" tabindex="-1">
+    <div class="avisos" aria-label="Mensajes de la aplicación"><p id="aviso" role="status"></p><p id="error" role="alert"></p></div>
+    <section class="hero"><div><h1>Tu lavadero,<br><span>bien organizado.</span></h1><p>Prepara tus servicios, horarios y cupos de atención.</p></div><div class="hero-detalle"><svg aria-hidden="true"><use href="/assets/iconos.svg#local"/></svg><p>Una agenda clara.<br>Un mejor servicio.</p></div></section>
+    <div class="gestion-grid">
+      <section id="configuracion" class="panel"><h2>Disponibilidad del lavadero</h2><label for="lavadero">Establecimiento</label><select id="lavadero"></select><p id="estado-lavadero" role="status"></p><form id="configurar"><fieldset><legend>Capacidad y horarios semanales</legend><div id="agenda"></div></fieldset><button type="submit" disabled>Guardar disponibilidad</button></form></section>
+      <section id="validacion" class="panel validacion-panel"><svg class="icono-grande" aria-hidden="true"><use href="/assets/iconos.svg#turno"/></svg><h2>Recibe a tu cliente</h2><p>Valida el código para el establecimiento elegido y la hora actual de Colombia.</p><form id="validar"><label for="codigo">Código de reserva</label><input id="codigo" required maxlength="12" placeholder="LRXXXXXXXXXX" autocapitalize="characters" spellcheck="false"><button type="submit" disabled>Validar código</button><p id="resultado-codigo" role="status"></p></form></section>
+    </div>
+    <section id="registro" class="panel"><h2>Registra un nuevo lavadero</h2><p>La administración revisará tus datos antes de publicar el establecimiento.</p><form id="registrar"><div class="campos"><div><label for="nombre">Nombre comercial</label><input id="nombre" required maxlength="100" autocomplete="organization"></div><div><label for="direccion">Dirección</label><input id="direccion" required maxlength="160" autocomplete="street-address"></div><div><label for="telefono">Teléfono</label><input id="telefono" type="tel" required maxlength="25" autocomplete="tel"></div><div><label for="sector">Sector de Pasto</label><select id="sector" required></select></div></div><fieldset><legend>Servicios y precios iniciales</legend><div id="servicios" class="servicios"></div></fieldset><fieldset><legend>Agenda inicial</legend><div id="agenda-inicial"></div></fieldset><button type="submit" disabled>Enviar a revisión</button></form></section>
+  </main>
+  <footer class="envoltura pie"><span>LavaRápido · Universidad Mariana</span><span>Prototipo académico · Pasto, Colombia</span></footer>
+</body>
+</html>

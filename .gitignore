@@ -1,0 +1,12 @@
+﻿
+# Archivos locales de LavaRapido
+**/node_modules/
+**/respaldo_*/
+**/.env
+**/.env.*
+!**/.env.example
+**/data/
+**/*.sqlite
+**/*.sqlite-*
+**/*.log
+**/*.respaldo-*
